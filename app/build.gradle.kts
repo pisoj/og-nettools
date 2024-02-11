@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     kotlin("android")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -34,7 +35,7 @@ android {
 }
 
 dependencies {
-    //noinspection GradleCompatible
+    //noinspection GradleCompatible,GradleCompatible
     implementation("com.android.support:support-fragment:25.0.0")
     //noinspection GradleCompatible
     implementation("com.android.support:recyclerview-v7:25.0.0")

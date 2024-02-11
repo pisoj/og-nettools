@@ -25,7 +25,6 @@ class MainActivity : FragmentActivity() {
         }
         tabHost.setOnTabChangedListener { tag ->
             viewPager.currentItem = tag.toInt()
-            println(tag)
         }
 
         viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
