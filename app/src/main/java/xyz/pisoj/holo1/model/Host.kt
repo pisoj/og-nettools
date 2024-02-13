@@ -9,6 +9,10 @@ data class Host(
         Available,
         Warning,
         Error,
-        Unavailable,
+        Unavailable
     }
+}
+
+fun Boolean.toHostStatus(): Host.Status {
+    return if(this) Host.Status.Available else Host.Status.Unavailable
 }

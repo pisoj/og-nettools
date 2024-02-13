@@ -1,7 +1,5 @@
 package xyz.pisoj.holo1
 
-import android.content.Context
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +10,9 @@ import xyz.pisoj.holo1.model.Host
 import xyz.pisoj.holo1.utils.formatLatencyMillis
 import xyz.pisoj.holo1.utils.getColorForStatus
 
-class HostListAdapter(private val hosts: List<Host>): BaseAdapter() {
+
+class HostListAdapter(var hosts: List<Host>): BaseAdapter() {
+
     override fun getCount(): Int {
         return hosts.size
     }
@@ -43,10 +43,6 @@ class HostListAdapter(private val hosts: List<Host>): BaseAdapter() {
         private val hostTextView: TextView = root.findViewById(R.id.host)
         private val latencyTextView: TextView = root.findViewById(R.id.latency)
         private val statusView: ImageView = root.findViewById(R.id.status)
-
-        init {
-            println("new ViewHolder")
-        }
 
         fun setHostText(value: String) {
             hostTextView.text = value
