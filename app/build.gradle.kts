@@ -18,7 +18,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -35,13 +36,5 @@ android {
 }
 
 dependencies {
-    //noinspection GradleCompatible,GradleCompatible
-    implementation("com.android.support:support-fragment:25.0.0")
-    //noinspection GradleCompatible
-    implementation("com.android.support:recyclerview-v7:25.0.0")
-    //noinspection GradleCompatible
-    implementation("com.android.support:support-core-ui:25.0.0")
-    //noinspection GradleDependency
-    implementation("com.android.support.constraint:constraint-layout:1.1.3")
     testImplementation("junit:junit:4.13.2")
 }
