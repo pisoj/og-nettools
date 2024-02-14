@@ -32,7 +32,7 @@
             android:viewportHeight="960" android:viewportWidth="960"
             android:width="24dp">
 
-            <path android:fillColor="#7a7a7a"
+            <path android:fillColor="#454545"
                 android:pathData="M960,550C960,323.56 776.44,140 550,140C323.56,140 140,323.56 140,550C140,776.44 323.56,960 550,960C776.44,960 960,776.44 960,550Z" android:strokeColor="#00000000"/>
 
             <path android:fillColor="#00b8ea"

@@ -11,7 +11,7 @@ import xyz.pisoj.holo1.utils.formatLatencyMillis
 import xyz.pisoj.holo1.utils.getColorForStatus
 
 
-class HostListAdapter(var hosts: List<Host>): BaseAdapter() {
+class HostListAdapter(var hosts: MutableList<Host>): BaseAdapter() {
 
     override fun getCount(): Int {
         return hosts.size
