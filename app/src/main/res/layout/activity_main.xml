@@ -153,6 +153,34 @@
                     android:max="3000"
                     android:progress="1000" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Whois server" />
+
+                <EditText
+                    android:id="@+id/whoisServer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="whois.iana.org"
+                    android:inputType="text"
+                    tools:ignore="HardcodedText" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Whois port" />
+
+                <EditText
+                    android:id="@+id/whoisPort"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="43"
+                    android:inputType="number"
+                    tools:ignore="HardcodedText" />
+
             </LinearLayout>
 
         </RelativeLayout>

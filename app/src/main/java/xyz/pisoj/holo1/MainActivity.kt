@@ -3,22 +3,27 @@
 package xyz.pisoj.holo1
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ListView
+import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.SlidingDrawer
 import android.widget.TabHost
+import android.widget.TextView
 import kotlinx.parcelize.Parcelize
 import xyz.pisoj.holo1.model.Host
 import xyz.pisoj.holo1.model.toHostStatus
+import xyz.pisoj.holo1.utils.dpToPixels
+import xyz.pisoj.holo1.utils.whois
 import java.net.InetAddress
+import java.net.UnknownHostException
 import kotlin.concurrent.thread
 
 
@@ -28,6 +33,7 @@ class MainActivity : Activity() {
     private lateinit var tabHost: TabHost
     private lateinit var drawer: SlidingDrawer
     private lateinit var mask: View
+    private lateinit var queryButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,10 +42,9 @@ class MainActivity : Activity() {
 
         setupTabHost()
         setupQueryButton()
-        setupDrawer()
-        setupPingDelaySeekBar()
+        setupPreferences()
         if(state.isOperationActive) {
-            state.operation(this, resetState = false)
+            state.operation(this, shouldResetState = false)
         }
     }
 
@@ -74,57 +79,20 @@ class MainActivity : Activity() {
                     }
             )
         }
+        tabHost.setCurrentTabByTag(state.operation.name)
         tabHost.setOnTabChangedListener {
-            state = state.copy(operation = Operation.valueOf(it))
+            state = state.copy(operation = Operation.valueOf(it), isOperationActive = false)
+            updateQueryButton()
         }
     }
 
-    private fun setupDrawer() {
+    private fun setupPreferences() {
         mask = findViewById(R.id.mask)
         drawer = findViewById(R.id.drawer)
         findViewById<ImageButton>(R.id.preferences).setOnClickListener { openDrawer() }
         findViewById<ImageButton>(R.id.drawerBack).setOnClickListener { closeDrawer() }
-    }
+        if (state.isDrawerOpened) openDrawer()
 
-    private fun openDrawer() {
-        mask.visibility = View.VISIBLE
-        mask.startAnimation(AlphaAnimation(0f, 1f).apply {
-            duration = 200
-            fillAfter = true
-        })
-        drawer.animateOpen()
-    }
-
-    private fun closeDrawer() {
-        mask.startAnimation(AlphaAnimation(1f, 0f).apply {
-            duration = 200
-            fillAfter = true
-        })
-        drawer.animateClose()
-        mask.visibility = View.GONE
-    }
-
-    private fun setupQueryButton() {
-        val hostEditText = findViewById<EditText>(R.id.host)
-        val queryButton = findViewById<ImageButton>(R.id.query)
-        queryButton.setImageResource(
-            if(state.isOperationActive) R.drawable.ic_stop else R.drawable.ic_query
-        )
-        queryButton.setOnClickListener {
-            state = state.copy(
-                host = hostEditText.text.toString(),
-                isOperationActive = !state.isOperationActive
-            )
-            (it as ImageButton).setImageResource(
-                if(state.isOperationActive) R.drawable.ic_stop else R.drawable.ic_query
-            )
-            if(state.isOperationActive) {
-                state.operation(this, resetState = true)
-            }
-        }
-    }
-
-    private fun setupPingDelaySeekBar() {
         val pingDelay = findViewById<SeekBar>(R.id.pingDelay)
         pingDelay.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -137,12 +105,61 @@ class MainActivity : Activity() {
         pingDelay.progress = state.pingDelay
     }
 
+    private fun openDrawer() {
+        mask.visibility = View.VISIBLE
+        mask.startAnimation(AlphaAnimation(0f, 1f).apply {
+            duration = 200
+            fillAfter = true
+        })
+        drawer.animateOpen()
+        state = state.copy(isDrawerOpened = true)
+    }
+
+    private fun closeDrawer() {
+        mask.startAnimation(AlphaAnimation(1f, 0f).apply {
+            duration = 200
+            fillAfter = true
+        })
+        drawer.animateClose()
+        mask.visibility = View.GONE
+        state = state.copy(isDrawerOpened = false)
+    }
+
+    private fun setupQueryButton() {
+        val hostEditText = findViewById<EditText>(R.id.host)
+        queryButton = findViewById(R.id.query)
+        updateQueryButton()
+        val whoisServer = findViewById<EditText>(R.id.whoisServer)
+        val whoisPort = findViewById<EditText>(R.id.whoisPort)
+        queryButton.setOnClickListener {
+            state = state.copy(
+                host = hostEditText.text.toString(),
+                whoisServer = whoisServer.text.toString().ifBlank { "whois.iana.org" },
+                whoisPort = whoisPort.text.toString().ifBlank { "43" }.toInt(),
+                isOperationActive = !state.isOperationActive
+            )
+            updateQueryButton()
+            if(state.isOperationActive) {
+                state.operation(this, shouldResetState = true)
+            }
+        }
+    }
+
+    private fun updateQueryButton() {
+        queryButton.setImageResource(
+            if(state.isOperationActive) R.drawable.ic_stop else R.drawable.ic_query
+        )
+    }
+
     @Parcelize
     private data class State(
         val operation: Operation = Operation.Ping,
         val isOperationActive: Boolean = false,
+        val isDrawerOpened: Boolean = false,
         val host: String = "",
         val pingDelay: Int = 1000,
+        val whoisServer: String = "whois.iana.org",
+        val whoisPort: Int = 43,
     ) : Parcelable
 
     /**
@@ -153,25 +170,36 @@ class MainActivity : Activity() {
         Ping(title = "Ping") {
             private val adapter by lazy { HostListAdapter(mutableListOf()) }
 
-            override fun createContent(context: Context): ListView {
-                return ListView(context).apply {
-                    divider = null
-                    adapter =  this@Ping.adapter
-                }
-            }
-
-            override operator fun invoke(mainActivity: MainActivity, resetState: Boolean) {
-                if(resetState) {
+            override operator fun invoke(mainActivity: MainActivity, shouldResetState: Boolean) {
+                if(shouldResetState) {
                     adapter.hosts = mutableListOf()
                     adapter.notifyDataSetChanged()
                 }
                 thread {
-                    ping(mainActivity) { host ->
+                    try {
+                        ping(mainActivity) { host ->
+                            mainActivity.runOnUiThread {
+                                adapter.hosts.add(index = 0, host)
+                                adapter.notifyDataSetChanged()
+                            }
+                        }
+                    } catch (e: UnknownHostException) {
                         mainActivity.runOnUiThread {
-                            adapter.hosts.add(index = 0, host)
-                            adapter.notifyDataSetChanged()
+                            mainActivity.state = mainActivity.state.copy(isOperationActive = false)
+                            AlertDialog.Builder(mainActivity)
+                                .setTitle("Failed to resolve the host name")
+                                .setPositiveButton("Close") { _, _ -> }
+                                .show()
+                            mainActivity.updateQueryButton()
                         }
                     }
+                }
+            }
+
+            override fun createContent(context: Context): View {
+                return ListView(context).apply {
+                    divider = null
+                    adapter =  this@Ping.adapter
                 }
             }
 
@@ -189,9 +217,98 @@ class MainActivity : Activity() {
                     }
                 }
             }
+        },
+
+        /*Dns(title = "Dns") {
+            private lateinit var textView: TextView
+
+            override fun invoke(mainActivity: MainActivity, shouldResetState: Boolean) {
+                thread {
+                    try {
+                        val output = InetAddress.getAllByName(mainActivity.state.host)
+                            .ifEmpty { throw UnknownHostException() }.joinToString("\n") { it.hostAddress!! }
+                        mainActivity.runOnUiThread {
+                            textView.text = output
+                            mainActivity.state = mainActivity.state.copy(isOperationActive = false)
+                            mainActivity.updateQueryButton()
+                        }
+                    } catch (e: UnknownHostException) {
+                        mainActivity.runOnUiThread {
+                            AlertDialog.Builder(mainActivity)
+                                .setTitle("Cannot look up the domain")
+                                .setPositiveButton("Close") { _, _ -> }
+                                .show()
+                            mainActivity.state = mainActivity.state.copy(isOperationActive = false)
+                            mainActivity.updateQueryButton()
+                        }
+                    }
+                }
+            }
+
+            override fun createContent(context: Context): View {
+                textView = TextView(context).apply {
+                    val paddingInPixels = context.dpToPixels(16)
+                    setPadding(paddingInPixels, paddingInPixels, paddingInPixels, 0)
+                }
+                return textView
+            }
+        },*/
+
+        Whois(title = "Whois") {
+            private lateinit var textView: TextView
+
+            override fun invoke(mainActivity: MainActivity, shouldResetState: Boolean) {
+                thread {
+                    try {
+                        val output = whois(
+                            domain = mainActivity.state.host,
+                            whoisServer = mainActivity.state.whoisServer,
+                            whoisPort = mainActivity.state.whoisPort
+                        )
+                        mainActivity.runOnUiThread {
+                            textView.text = output
+                        }
+                    } catch (e: UnknownHostException) {
+                        mainActivity.runOnUiThread {
+                            AlertDialog.Builder(mainActivity)
+                                .setTitle("Failed to resolve the host name of the whois server")
+                                .setMessage("Please check you internet connection and whois server configuration.")
+                                .setPositiveButton("Close") { _, _ -> }
+                                .show()
+                        }
+                    } catch (e: Exception) {
+                        mainActivity.runOnUiThread {
+                            AlertDialog.Builder(mainActivity)
+                                .setTitle("Failed to query the whois server")
+                                .setMessage("Please check you whois server configuration. ${e.message.orEmpty()}")
+                                .setPositiveButton("Close") { _, _ -> }
+                                .show()
+                        }
+                        e.printStackTrace()
+                    } finally {
+                        mainActivity.runOnUiThread {
+                            mainActivity.state = mainActivity.state.copy(isOperationActive = false)
+                            mainActivity.updateQueryButton()
+                        }
+                    }
+                }
+            }
+
+            override fun createContent(context: Context): View {
+                val paddingInPixels = context.dpToPixels(16)
+                textView = TextView(context).apply {
+                    setPadding(paddingInPixels, paddingInPixels, paddingInPixels, paddingInPixels)
+                    setTextIsSelectable(true)
+                }
+                return ScrollView(context).apply { addView(textView) }
+            }
         };
 
-        abstract operator fun invoke(mainActivity: MainActivity, resetState: Boolean)
+        /**
+         * @param shouldResetState Should the operation reset the output of a previous run or should
+         * it just append the new output to the previous one. It's okay to ignore this when implementing a new operation if it doesn't make sense.
+         */
+        abstract operator fun invoke(mainActivity: MainActivity, shouldResetState: Boolean)
 
         abstract fun createContent(context: Context): View
     }
