@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "xyz.pisoj.holo1"
+    namespace = "xyz.pisoj.og.nettools"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "xyz.pisoj.holo1"
+        applicationId = "xyz.pisoj.og.nettools"
         minSdk = 11
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1.0"
     }
 
     buildTypes {

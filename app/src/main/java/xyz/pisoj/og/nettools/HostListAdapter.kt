@@ -1,4 +1,4 @@
-package xyz.pisoj.holo1
+package xyz.pisoj.og.nettools
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import xyz.pisoj.holo1.model.Host
-import xyz.pisoj.holo1.utils.formatLatencyMillis
-import xyz.pisoj.holo1.utils.getColorForStatus
+import xyz.pisoj.og.nettools.model.Host
+import xyz.pisoj.og.nettools.utils.formatLatencyMillis
+import xyz.pisoj.og.nettools.utils.getColorForStatus
 
 
 class HostListAdapter(var hosts: MutableList<Host>): BaseAdapter() {

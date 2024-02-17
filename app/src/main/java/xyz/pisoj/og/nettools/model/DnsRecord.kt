@@ -1,4 +1,4 @@
-package xyz.pisoj.holo1.model
+package xyz.pisoj.og.nettools.model
 
 import java.security.InvalidParameterException
 
@@ -8,7 +8,8 @@ data class DnsRecord(
     val type: DnsRecordType,
     val ttl: Int,
 ) {
-    constructor(name: String, data: String, typeId: Int, ttl: Int) : this(name, data, DnsRecordType.byTypeId(typeId), ttl)
+    constructor(name: String, data: String, typeId: Int, ttl: Int) : this(name, data,
+        DnsRecordType.byTypeId(typeId), ttl)
 }
 
 enum class DnsRecordType(val typeId: Int) {

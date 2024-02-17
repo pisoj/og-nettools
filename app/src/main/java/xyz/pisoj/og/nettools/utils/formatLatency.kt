@@ -1,4 +1,4 @@
-package xyz.pisoj.holo1.utils
+package xyz.pisoj.og.nettools.utils
 
 fun formatLatencyMillis(latencyMillis: Long): String {
     return if(latencyMillis > 1000) {

@@ -1,4 +1,4 @@
-package xyz.pisoj.holo1.model
+package xyz.pisoj.og.nettools.model
 
 data class Host(
     val host: String,

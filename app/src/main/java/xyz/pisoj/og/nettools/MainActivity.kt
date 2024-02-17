@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package xyz.pisoj.holo1
+package xyz.pisoj.og.nettools
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -27,12 +27,12 @@ import android.widget.TextView
 import android.widget.Toast
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
-import xyz.pisoj.holo1.model.DnsRecord
-import xyz.pisoj.holo1.model.DnsRecordType
-import xyz.pisoj.holo1.model.Host
-import xyz.pisoj.holo1.model.toHostStatus
-import xyz.pisoj.holo1.utils.dpToPixels
-import xyz.pisoj.holo1.utils.whois
+import xyz.pisoj.og.nettools.model.DnsRecord
+import xyz.pisoj.og.nettools.model.DnsRecordType
+import xyz.pisoj.og.nettools.model.Host
+import xyz.pisoj.og.nettools.model.toHostStatus
+import xyz.pisoj.og.nettools.utils.dpToPixels
+import xyz.pisoj.og.nettools.utils.whois
 import java.net.InetAddress
 import java.net.URL
 import java.net.URLEncoder
@@ -290,7 +290,7 @@ class MainActivity : Activity() {
                     divider = null
                     adapter = this@Dns.adapter
                     onItemLongClickListener =
-                        AdapterView.OnItemLongClickListener { parent, view, position, id ->
+                        AdapterView.OnItemLongClickListener { _, _, position, _ ->
                             val dnsRecord = getItemAtPosition(position) as DnsRecord
                             clipboard.setPrimaryClip(ClipData.newPlainText(dnsRecord.data, dnsRecord.data))
                             Toast.makeText(context, "Data copied to clipboard", Toast.LENGTH_SHORT).show()

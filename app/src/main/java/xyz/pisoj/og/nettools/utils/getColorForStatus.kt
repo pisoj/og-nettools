@@ -1,9 +1,9 @@
-package xyz.pisoj.holo1.utils
+package xyz.pisoj.og.nettools.utils
 
 import android.content.Context
 import android.os.Build
-import xyz.pisoj.holo1.R
-import xyz.pisoj.holo1.model.Host
+import xyz.pisoj.og.nettools.R
+import xyz.pisoj.og.nettools.model.Host
 
 fun Context.getColorForStatus(status: Host.Status): Int {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Holo"
+rootProject.name = "OG Network Tools"
 include(":app")

@@ -1,4 +1,4 @@
-package xyz.pisoj.holo1.utils
+package xyz.pisoj.og.nettools.utils
 
 import java.io.BufferedReader
 import java.io.IOException
