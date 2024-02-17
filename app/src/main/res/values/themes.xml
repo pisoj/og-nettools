@@ -1,6 +1,5 @@
 <resources>
-    <!-- Base application theme. -->
-    <style name="Theme.Holo" parent="android:Theme.Holo.Light">
+    <style name="Theme.Holo" parent="android:Theme.Holo">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>

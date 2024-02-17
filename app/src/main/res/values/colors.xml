@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="foreground">#000</color>
+    <color name="foreground">#fff</color>
     <color name="available">#00DC75</color>
     <color name="warning">#E5CE01</color>
     <color name="error">#DC0046</color>
     <color name="unavailable">#898989</color>
+    <color name="accent">#00B8EA</color>
 </resources>

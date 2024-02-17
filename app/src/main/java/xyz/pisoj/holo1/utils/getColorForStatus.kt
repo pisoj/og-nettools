@@ -17,6 +17,7 @@ fun Context.getColorForStatus(status: Host.Status): Int {
             null
         )
     } else {
+        @Suppress("DEPRECATION")
         resources.getColor(
             when(status) {
                 Host.Status.Available -> R.color.available
