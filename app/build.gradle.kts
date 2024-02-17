@@ -35,6 +35,4 @@ android {
     }
 }
 
-dependencies {
-    testImplementation("junit:junit:4.13.2")
-}
+dependencies {}

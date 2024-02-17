@@ -4,11 +4,18 @@ package xyz.pisoj.holo1
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.View
 import android.view.animation.AlphaAnimation
+import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ListView
@@ -17,12 +24,18 @@ import android.widget.SeekBar
 import android.widget.SlidingDrawer
 import android.widget.TabHost
 import android.widget.TextView
+import android.widget.Toast
 import kotlinx.parcelize.Parcelize
+import org.json.JSONObject
+import xyz.pisoj.holo1.model.DnsRecord
+import xyz.pisoj.holo1.model.DnsRecordType
 import xyz.pisoj.holo1.model.Host
 import xyz.pisoj.holo1.model.toHostStatus
 import xyz.pisoj.holo1.utils.dpToPixels
 import xyz.pisoj.holo1.utils.whois
 import java.net.InetAddress
+import java.net.URL
+import java.net.URLEncoder
 import java.net.UnknownHostException
 import kotlin.concurrent.thread
 
@@ -219,25 +232,42 @@ class MainActivity : Activity() {
             }
         },
 
-        /*Dns(title = "Dns") {
-            private lateinit var textView: TextView
+        Dns(title = "Dns") {
+            private val adapter by lazy { DnsListAdapter(mutableListOf()) }
 
             override fun invoke(mainActivity: MainActivity, shouldResetState: Boolean) {
+                adapter.records = mutableListOf()
+                adapter.notifyDataSetChanged()
                 thread {
                     try {
-                        val output = InetAddress.getAllByName(mainActivity.state.host)
-                            .ifEmpty { throw UnknownHostException() }.joinToString("\n") { it.hostAddress!! }
-                        mainActivity.runOnUiThread {
-                            textView.text = output
-                            mainActivity.state = mainActivity.state.copy(isOperationActive = false)
-                            mainActivity.updateQueryButton()
+                        val resultText = URL("https://dns.google/resolve?name=${URLEncoder.encode(mainActivity.state.host, "UTF-8")}&type=${DnsRecordType.ANY}").readText()
+                        val records = JSONObject(resultText).getJSONArray("Answer")
+                        for(i in 0 ..< records.length()) {
+                            records.getJSONObject(i).apply {
+                                adapter.records.add(
+                                    DnsRecord(
+                                        name = getString("name"),
+                                        data = getString("data"),
+                                        typeId = getInt("type"),
+                                        ttl = getInt("TTL"),
+                                    )
+                                )
+                            }
                         }
-                    } catch (e: UnknownHostException) {
+                        mainActivity.runOnUiThread {
+                            adapter.notifyDataSetChanged()
+                        }
+                    } catch (e: Exception) {
                         mainActivity.runOnUiThread {
                             AlertDialog.Builder(mainActivity)
-                                .setTitle("Cannot look up the domain")
+                                .setTitle("Failed to query dns.google")
+                                .setMessage("${e::class.qualifiedName}: ${e.message.orEmpty()}")
                                 .setPositiveButton("Close") { _, _ -> }
                                 .show()
+                        }
+                        e.printStackTrace()
+                    } finally {
+                        mainActivity.runOnUiThread {
                             mainActivity.state = mainActivity.state.copy(isOperationActive = false)
                             mainActivity.updateQueryButton()
                         }
@@ -246,13 +276,35 @@ class MainActivity : Activity() {
             }
 
             override fun createContent(context: Context): View {
-                textView = TextView(context).apply {
-                    val paddingInPixels = context.dpToPixels(16)
-                    setPadding(paddingInPixels, paddingInPixels, paddingInPixels, 0)
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val vibratorManager =
+                        context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                    vibratorManager.defaultVibrator
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.getSystemService(VIBRATOR_SERVICE) as Vibrator
                 }
-                return textView
+
+                return ListView(context).apply {
+                    divider = null
+                    adapter = this@Dns.adapter
+                    onItemLongClickListener =
+                        AdapterView.OnItemLongClickListener { parent, view, position, id ->
+                            val dnsRecord = getItemAtPosition(position) as DnsRecord
+                            clipboard.setPrimaryClip(ClipData.newPlainText(dnsRecord.data, dnsRecord.data))
+                            Toast.makeText(context, "Data copied to clipboard", Toast.LENGTH_SHORT).show()
+                            if (Build.VERSION.SDK_INT >= 26) {
+                                vibrator.vibrate(VibrationEffect.createOneShot(60, VibrationEffect.DEFAULT_AMPLITUDE))
+                            } else {
+                                @Suppress("DEPRECATION")
+                                vibrator.vibrate(60)
+                            }
+                            true
+                        }
+                }
             }
-        },*/
+        },
 
         Whois(title = "Whois") {
             private lateinit var textView: TextView
@@ -280,7 +332,7 @@ class MainActivity : Activity() {
                         mainActivity.runOnUiThread {
                             AlertDialog.Builder(mainActivity)
                                 .setTitle("Failed to query the whois server")
-                                .setMessage("Please check you whois server configuration. ${e.message.orEmpty()}")
+                                .setMessage("Please check you whois server configuration.\n${e::class.qualifiedName}: ${e.message.orEmpty()}")
                                 .setPositiveButton("Close") { _, _ -> }
                                 .show()
                         }
