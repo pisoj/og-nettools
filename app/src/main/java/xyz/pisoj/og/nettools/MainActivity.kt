@@ -16,12 +16,14 @@ import android.os.VibratorManager
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.SlidingDrawer
+import android.widget.Spinner
 import android.widget.TabHost
 import android.widget.TextView
 import android.widget.Toast
@@ -116,6 +118,25 @@ class MainActivity : Activity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         })
         pingDelay.progress = state.pingDelay
+
+        val dnsRecordType = findViewById<Spinner>(R.id.dnsRecordType)
+        ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item).apply {
+            addAll(DnsRecordType.entries.map { it.name })
+            dnsRecordType.adapter = this
+        }
+        dnsRecordType.setSelection(state.dnsRecordType.ordinal)
+        dnsRecordType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                state = state.copy(dnsRecordType = DnsRecordType.entries[position])
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
     }
 
     private fun openDrawer() {
@@ -171,6 +192,7 @@ class MainActivity : Activity() {
         val isDrawerOpened: Boolean = false,
         val host: String = "",
         val pingDelay: Int = 1000,
+        val dnsRecordType: DnsRecordType = DnsRecordType.ANY,
         val whoisServer: String = "whois.iana.org",
         val whoisPort: Int = 43,
     ) : Parcelable
@@ -240,7 +262,7 @@ class MainActivity : Activity() {
                 adapter.notifyDataSetChanged()
                 thread {
                     try {
-                        val resultText = URL("https://dns.google/resolve?name=${URLEncoder.encode(mainActivity.state.host, "UTF-8")}&type=${DnsRecordType.ANY}").readText()
+                        val resultText = URL("https://dns.google/resolve?name=${URLEncoder.encode(mainActivity.state.host, "UTF-8")}&type=${mainActivity.state.dnsRecordType.typeId}").readText()
                         val records = JSONObject(resultText).getJSONArray("Answer")
                         for(i in 0 ..< records.length()) {
                             records.getJSONObject(i).apply {

@@ -1,8 +1,8 @@
 <img src="/app/src/main/ic_launcher-playstore.png" style="width: 12rem" />
 
 ## OG Network Tools
-A modern network toolbox built to feel like the original android apps **without jank**. Open and download **instantly**, seriously it's well **under 200KB!**
-Why? - Becouse today's apps tend to feel slow and janky on anything but the latest hardware, no more.
+A modern network toolbox built to feel like the original android apps **without jank**. Downloads and opens **instantly**, seriously it's well **under 200KB!**
+Why? - Because today's apps tend to feel slow and janky on anything but the latest hardware, no more.
 
 **Device support** - All devices running **Android 3.0** and above are supported!
 
@@ -26,4 +26,6 @@ Currently the thing that is needed the most is **testing**, especially on older 
 It would also be very nice if someone would take the time to extract user-facing text into **string resources** to make it **translatable**. I **don't** want to use @dimmen, it just complicates things.
 Any other contributions are also welcome. There are **no specific guidelines** since this is a very small project; the only requirement is that you **care** about your **code** and
 **others** who will **maintain** it. Using depracated APIs isn't as big of a problem here as it's in other projects since we need to maintain compatibility with very old devices
-and avoid using any dependencies, but if you can **avoid using depracated APIs without adding an additional dependency**, you should do it. I'm also **open to any refactoring**.
+and avoid using any dependencies, but if you can **avoid using depracated APIs without adding an additional dependency**, you should do it. Also, please **don't suppress lints** that **can be
+corrected** (not using string resources...), you **can**, however, suppress lints we cannot correct, at lest not without a library (using TabHost, it's deprecated but
+to not use it we would need to add a dependency) or that are **not needed** (putting an IP address into string resources...). I'm also **open for any refactoring**.

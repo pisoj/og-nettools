@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -157,6 +156,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:text="DNS record type to query" />
+
+
+                <Spinner
+                    android:id="@+id/dnsRecordType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
                     android:text="Whois server" />
 
                 <EditText
@@ -165,7 +176,8 @@
                     android:layout_height="wrap_content"
                     android:hint="whois.iana.org"
                     android:inputType="text"
-                    tools:ignore="HardcodedText" />
+                    tools:ignore="HardcodedText"
+                    android:autofillHints="dnsRecord" />
 
                 <TextView
                     android:layout_width="match_parent"
