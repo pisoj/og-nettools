@@ -1,7 +1,7 @@
 <img src="/app/src/main/ic_launcher-playstore.png" style="width: 12rem" />
 
 ## OG Network Tools
-A modern network toolbox built to feel like the original android apps **without jank**. Downloads and opens **instantly**, seriously it's well **under 200KB!**
+A modern network toolbox built to feel like original android apps **without jank**. Downloads and opens **instantly**, seriously it's well **under 200KB!**
 Why? - Because today's apps tend to feel slow and janky on anything but the latest hardware, no more.
 
 **Device support** - All devices running **Android 3.0** and above are supported!

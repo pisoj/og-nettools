@@ -1,0 +1,4 @@
+<p>Downloads and opens <strong>instantly</strong>, seriously it's well <strong>under 200KB!</strong> Why? - Because today's apps tend to feel slow and janky on anything but the latest hardware, no more.</p>
+<p><strong>Device support</strong> - All devices running <strong>Android 3.0</strong> and above are supported!</p>
+<p><strong>How is is possible?</strong> - The small size and <strong>extreme compatibility</strong> are possible thanks to our <strong>no dependency</strong> policy. This app literally has empty depecndecies block.</p>
+<p><strong>Does it look good?</strong> - The app uses the original andorid <strong>Holo</strong> theme, so it's perfect if you miss <strong>good old days</strong>, but we've also given it a <strong>modern twist</strong> with custom implementations of UI components like floating action button for example.</p>
