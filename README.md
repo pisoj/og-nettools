@@ -20,6 +20,14 @@ but we've also given it a **modern twist** with custom implementations of UI com
 <img style="width: 14rem" src="https://github.com/pisoj/og-nettools/assets/87895700/dbf7b6a7-5a2f-4fda-8771-5a385a0017c3" />
 <img style="width: 14rem" src="https://github.com/pisoj/og-nettools/assets/87895700/683fbba3-fde2-4a83-8495-f382a1974e4e" />
 
+## Download
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/xyz.pisoj.og.nettools/)
+
+Or download the latest APK from the [Releases Section](https://github.com/pisoj/og-nettools/releases/latest).
+
 ## Contributing
 
 Currently the thing that is needed the most is **testing**, especially on older devices **<=Android 4.3**. I unfortunately have an M1 Mac and am therefore unable to run these older emulators.
