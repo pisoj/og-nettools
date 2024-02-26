@@ -40,6 +40,7 @@ import java.net.URL
 import java.net.URLEncoder
 import java.net.UnknownHostException
 import kotlin.concurrent.thread
+import kotlin.math.roundToLong
 
 
 class MainActivity : Activity() {
@@ -239,12 +240,47 @@ class MainActivity : Activity() {
             }
 
             private fun ping(mainActivity: MainActivity, onNewPing: (host: Host) -> Unit) {
+                terminalPing(mainActivity, onNewPing)
+                return
                 val hostInet = InetAddress.getByName(mainActivity.state.host)
                 while (mainActivity.state.isOperationActive) {
                     val start = System.currentTimeMillis()
                     val status = hostInet.isReachable(1500).toHostStatus()
                     val latency = System.currentTimeMillis() - start
-                    onNewPing(Host(mainActivity.state.host, if(status == Host.Status.Unavailable) null else latency, status))
+                    onNewPing(
+                        Host(
+                            host = mainActivity.state.host,
+                            latencyMillis = if(status == Host.Status.Unavailable) null else latency,
+                            status = status
+                        )
+                    )
+
+                    (1..mainActivity.state.pingDelay / 100).forEach { _ ->
+                        if (!mainActivity.state.isOperationActive) return
+                        Thread.sleep(100)
+                    }
+                }
+            }
+
+            private fun terminalPing(mainActivity: MainActivity, onNewPing: (host: Host) -> Unit) {
+                while (mainActivity.state.isOperationActive) {
+                    val rawResult = Runtime.getRuntime().exec(arrayOf("/system/bin/ping", "-c", "1", "-W", "1000", mainActivity.state.host))
+                        .inputStream.reader().readText()
+                    val rawTime =  Regex("time=([0-9.]+)\\sms").find(rawResult)?.groupValues?.get(1)
+                    val latency = rawTime?.run {
+                        if(endsWith("s")) {
+                            (removeSuffix("s").toFloat() * 1000).roundToLong()
+                        } else {
+                            removeSuffix("ms").toFloat().roundToLong()
+                        }
+                    }
+                    onNewPing(
+                        Host(
+                            host = mainActivity.state.host,
+                            latencyMillis = latency,
+                            status = if (latency == null) Host.Status.Unavailable else Host.Status.Available
+                        )
+                    )
 
                     (1..mainActivity.state.pingDelay / 100).forEach { _ ->
                         if (!mainActivity.state.isOperationActive) return
