@@ -41,7 +41,6 @@ import java.net.URL
 import java.net.URLEncoder
 import java.net.UnknownHostException
 import kotlin.concurrent.thread
-import kotlin.math.roundToLong
 
 
 class MainActivity : Activity() {
@@ -113,7 +112,7 @@ class MainActivity : Activity() {
         val pingDelay = findViewById<SeekBar>(R.id.pingDelay)
         pingDelay.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                state = state.copy(pingDelay = progress)
+                state = state.copy(pingDelay = progress + 300)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
@@ -265,21 +264,14 @@ class MainActivity : Activity() {
 
             private fun terminalPing(mainActivity: MainActivity, onNewPing: (host: Host) -> Unit) {
                 while (mainActivity.state.isOperationActive) {
-                    val rawResult = Runtime.getRuntime().exec(arrayOf("/system/bin/ping", "-c", "1", "-W", "1000", mainActivity.state.host))
-                        .inputStream.reader().readText()
-                    val rawTime =  Regex("time=([0-9.]+)\\sms").find(rawResult)?.groupValues?.get(1)
-                    val latency = rawTime?.run {
-                        if(endsWith("s")) {
-                            (removeSuffix("s").toFloat() * 1000).roundToLong()
-                        } else {
-                            removeSuffix("ms").toFloat().roundToLong()
-                        }
-                    }
+                    val pingProcess = Runtime.getRuntime().exec(arrayOf("/system/bin/ping", "-c", "1", "-W", "${mainActivity.state.pingDelay}", mainActivity.state.host))
+                    val pingOutput = pingProcess.inputStream.reader().readText()
+                    val time =  Regex("time=([0-9.]+)\\sms").find(pingOutput)?.groupValues?.get(1)
                     onNewPing(
                         Host(
                             host = mainActivity.state.host,
-                            time = rawTime,
-                            status = if (latency == null) Host.Status.Unavailable else Host.Status.Available
+                            time = time,
+                            status = if (time == null) Host.Status.Unavailable else Host.Status.Available
                         )
                     )
 

@@ -145,12 +145,13 @@
                     android:layout_height="wrap_content"
                     android:text="Delay between pings" />
 
+                <!-- the value is +300 when read -->
                 <SeekBar
                     android:id="@+id/pingDelay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:max="3000"
-                    android:progress="1000" />
+                    android:max="2700"
+                    android:progress="700" />
 
                 <TextView
                     android:layout_width="match_parent"
