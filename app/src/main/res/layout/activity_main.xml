@@ -133,68 +133,101 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <LinearLayout
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@+id/drawerBack"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_below="@+id/drawerBack">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Delay between pings" />
-
-                <!-- the value is +300 when read -->
-                <SeekBar
-                    android:id="@+id/pingDelay"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:max="2700"
-                    android:progress="700" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="DNS record type to query" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Delay between pings" />
+
+                    <!-- the value is +300 when read -->
+                    <SeekBar
+                        android:id="@+id/pingDelay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="2700"
+                        android:progress="700" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Ping timeout in milliseconds" />
+
+                    <EditText
+                        android:id="@+id/pingTimeoutMillis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="3000"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:lines="1" />
+
+                    <CheckBox
+                        android:id="@+id/alternativePingMethod"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Use alternative ping method" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Note: this will decrease precision, only use this if the normal ping doesn't work" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="DNS record type to query" />
 
 
-                <Spinner
-                    android:id="@+id/dnsRecordType"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <Spinner
+                        android:id="@+id/dnsRecordType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Whois server" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Whois server" />
 
-                <EditText
-                    android:id="@+id/whoisServer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="whois.iana.org"
-                    android:inputType="text"
-                    tools:ignore="HardcodedText"
-                    android:autofillHints="dnsRecord" />
+                    <EditText
+                        android:id="@+id/whoisServer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="whois.iana.org"
+                        android:inputType="text"
+                        tools:ignore="HardcodedText"
+                        android:autofillHints="dnsRecord" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Whois port" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Whois port" />
 
-                <EditText
-                    android:id="@+id/whoisPort"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="43"
-                    android:inputType="number"
-                    tools:ignore="HardcodedText" />
+                    <EditText
+                        android:id="@+id/whoisPort"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="43"
+                        android:inputType="number"
+                        tools:ignore="HardcodedText" />
 
-            </LinearLayout>
+                </LinearLayout>
+
+            </ScrollView>
 
         </RelativeLayout>
 

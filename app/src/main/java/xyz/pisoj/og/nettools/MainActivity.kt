@@ -17,6 +17,7 @@ import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ListView
@@ -120,6 +121,12 @@ class MainActivity : Activity() {
         })
         pingDelay.progress = state.pingDelay
 
+        val useAlternativePingMethod = findViewById<CheckBox>(R.id.alternativePingMethod)
+        useAlternativePingMethod.setOnCheckedChangeListener { _, isChecked ->
+            state = state.copy(useAlternativePingMethod = isChecked)
+        }
+        useAlternativePingMethod.isChecked = state.useAlternativePingMethod
+
         val dnsRecordType = findViewById<Spinner>(R.id.dnsRecordType)
         ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item).apply {
             addAll(DnsRecordType.entries.map { it.name })
@@ -164,11 +171,13 @@ class MainActivity : Activity() {
         val hostEditText = findViewById<EditText>(R.id.host)
         queryButton = findViewById(R.id.query)
         updateQueryButton()
+        val pingTimeout = findViewById<EditText>(R.id.pingTimeoutMillis)
         val whoisServer = findViewById<EditText>(R.id.whoisServer)
         val whoisPort = findViewById<EditText>(R.id.whoisPort)
         queryButton.setOnClickListener {
             state = state.copy(
                 host = hostEditText.text.toString(),
+                pingTimeout = pingTimeout.text.toString().ifBlank { "3000" }.toInt(),
                 whoisServer = whoisServer.text.toString().ifBlank { "whois.iana.org" },
                 whoisPort = whoisPort.text.toString().ifBlank { "43" }.toInt(),
                 isOperationActive = !state.isOperationActive
@@ -193,6 +202,8 @@ class MainActivity : Activity() {
         val isDrawerOpened: Boolean = false,
         val host: String = "",
         val pingDelay: Int = 1000,
+        val pingTimeout: Int = 3000,
+        val useAlternativePingMethod: Boolean = false,
         val dnsRecordType: DnsRecordType = DnsRecordType.ANY,
         val whoisServer: String = "whois.iana.org",
         val whoisPort: Int = 43,
@@ -211,22 +222,18 @@ class MainActivity : Activity() {
                     adapter.hosts = mutableListOf()
                     adapter.notifyDataSetChanged()
                 }
-                thread {
-                    try {
-                        ping(mainActivity) { host ->
-                            mainActivity.runOnUiThread {
-                                adapter.hosts.add(index = 0, host)
-                                adapter.notifyDataSetChanged()
-                            }
-                        }
-                    } catch (e: UnknownHostException) {
+                if (mainActivity.state.useAlternativePingMethod) {
+                    inetPing(mainActivity) { host ->
                         mainActivity.runOnUiThread {
-                            mainActivity.state = mainActivity.state.copy(isOperationActive = false)
-                            AlertDialog.Builder(mainActivity)
-                                .setTitle("Failed to resolve the host name")
-                                .setPositiveButton("Close") { _, _ -> }
-                                .show()
-                            mainActivity.updateQueryButton()
+                            adapter.hosts.add(index = 0, host)
+                            adapter.notifyDataSetChanged()
+                        }
+                    }
+                } else {
+                    terminalPing(mainActivity) { host ->
+                        mainActivity.runOnUiThread {
+                            adapter.hosts.add(index = 0, host)
+                            adapter.notifyDataSetChanged()
                         }
                     }
                 }
@@ -239,45 +246,84 @@ class MainActivity : Activity() {
                 }
             }
 
-            private fun ping(mainActivity: MainActivity, onNewPing: (host: Host) -> Unit) {
-                terminalPing(mainActivity, onNewPing)
-                return
-                val hostInet = InetAddress.getByName(mainActivity.state.host)
-                while (mainActivity.state.isOperationActive) {
-                    val start = System.currentTimeMillis()
-                    val status = hostInet.isReachable(1500).toHostStatus()
-                    val latency = System.currentTimeMillis() - start
-                    onNewPing(
-                        Host(
-                            host = mainActivity.state.host,
-                            time = if(status == Host.Status.Unavailable) null else formatLatencyMillis(latency),
-                            status = status
-                        )
-                    )
+            private fun inetPing(mainActivity: MainActivity, onNewPing: (host: Host) -> Unit) {
+                thread {
+                    try {
+                        val hostInet = InetAddress.getByName(mainActivity.state.host)
+                        while (mainActivity.state.isOperationActive) {
+                            val start = System.currentTimeMillis()
+                            val status = hostInet.isReachable(mainActivity.state.pingTimeout).toHostStatus()
+                            val latency = System.currentTimeMillis() - start
+                            onNewPing(
+                                Host(
+                                    host = mainActivity.state.host,
+                                    time = if(status == Host.Status.Unavailable) null else formatLatencyMillis(latency),
+                                    status = status
+                                )
+                            )
 
-                    (1..mainActivity.state.pingDelay / 100).forEach { _ ->
-                        if (!mainActivity.state.isOperationActive) return
-                        Thread.sleep(100)
+                            (1..mainActivity.state.pingDelay / 100).forEach { _ ->
+                                if (!mainActivity.state.isOperationActive) return@thread
+                                Thread.sleep(100)
+                            }
+                        }
+                    } catch (e: UnknownHostException) {
+                        mainActivity.runOnUiThread {
+                            AlertDialog.Builder(mainActivity)
+                                .setTitle("Failed to resolve the host name")
+                                .setPositiveButton("Close") { _, _ -> }
+                                .show()
+                            mainActivity.updateQueryButton()
+                        }
+                    } catch (e: Exception) {
+                        AlertDialog.Builder(mainActivity)
+                            .setTitle("Failed to perform a ping")
+                            .setMessage(e.message)
+                            .setPositiveButton("Close") { _, _ -> }
+                            .show()
+                        e.printStackTrace()
+                    } finally {
+                        mainActivity.state = mainActivity.state.copy(isOperationActive = false)
                     }
                 }
             }
 
             private fun terminalPing(mainActivity: MainActivity, onNewPing: (host: Host) -> Unit) {
-                while (mainActivity.state.isOperationActive) {
-                    val pingProcess = Runtime.getRuntime().exec(arrayOf("/system/bin/ping", "-c", "1", "-W", "${mainActivity.state.pingDelay}", mainActivity.state.host))
-                    val pingOutput = pingProcess.inputStream.reader().readText()
-                    val time =  Regex("time=([0-9.]+)\\sms").find(pingOutput)?.groupValues?.get(1)
-                    onNewPing(
-                        Host(
-                            host = mainActivity.state.host,
-                            time = time,
-                            status = if (time == null) Host.Status.Unavailable else Host.Status.Available
-                        )
+                val pingProcess = Runtime.getRuntime().exec(
+                    arrayOf(
+                        "/system/bin/ping",
+                        "-t","${mainActivity.state.pingTimeout}",
+                        "-W", "${mainActivity.state.pingDelay}",
+                        mainActivity.state.host
                     )
+                )
+                thread {
+                    pingProcess.inputStream.bufferedReader().use { reader ->
+                        var line: String? = reader.readLine()
+                        var isFirstLine = true
+                        while (mainActivity.state.isOperationActive) {
+                            if(line == null) {
+                                Thread.sleep(mainActivity.state.pingDelay / 2L)
+                                line = reader.readLine()
+                                continue
+                            }
+                            // The first line is always some kind of header if you will
+                            if (isFirstLine) {
+                                isFirstLine = false
+                                continue
+                            }
 
-                    (1..mainActivity.state.pingDelay / 100).forEach { _ ->
-                        if (!mainActivity.state.isOperationActive) return
-                        Thread.sleep(100)
+                            val time =  Regex("time=([0-9.]+\\sms)").find(line)?.groupValues?.get(1)
+                            onNewPing(
+                                Host(
+                                    host = mainActivity.state.host,
+                                    time = time,
+                                    status = if (time == null) Host.Status.Unavailable else Host.Status.Available
+                                )
+                            )
+
+                            line = reader.readLine()
+                        }
                     }
                 }
             }
