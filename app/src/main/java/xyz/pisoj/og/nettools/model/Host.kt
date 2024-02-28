@@ -2,7 +2,7 @@ package xyz.pisoj.og.nettools.model
 
 data class Host(
     val host: String,
-    val latencyMillis: Long?,
+    val time: String?,
     val status: Status
 ) {
     enum class Status {

@@ -34,6 +34,7 @@ import xyz.pisoj.og.nettools.model.DnsRecordType
 import xyz.pisoj.og.nettools.model.Host
 import xyz.pisoj.og.nettools.model.toHostStatus
 import xyz.pisoj.og.nettools.utils.dpToPixels
+import xyz.pisoj.og.nettools.utils.formatLatencyMillis
 import xyz.pisoj.og.nettools.utils.whois
 import java.net.InetAddress
 import java.net.URL
@@ -250,7 +251,7 @@ class MainActivity : Activity() {
                     onNewPing(
                         Host(
                             host = mainActivity.state.host,
-                            latencyMillis = if(status == Host.Status.Unavailable) null else latency,
+                            time = if(status == Host.Status.Unavailable) null else formatLatencyMillis(latency),
                             status = status
                         )
                     )
@@ -277,7 +278,7 @@ class MainActivity : Activity() {
                     onNewPing(
                         Host(
                             host = mainActivity.state.host,
-                            latencyMillis = latency,
+                            time = rawTime,
                             status = if (latency == null) Host.Status.Unavailable else Host.Status.Available
                         )
                     )

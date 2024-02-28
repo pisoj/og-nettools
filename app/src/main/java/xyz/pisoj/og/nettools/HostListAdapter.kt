@@ -66,7 +66,7 @@ class HostListAdapter(var hosts: MutableList<Host>): BaseAdapter() {
 
         fun setHost(host: Host) {
             setHostText(host.host)
-            setLatencyText(host.latencyMillis?.let { formatLatencyMillis(it) })
+            setLatencyText(host.time)
             setStatus(host.status)
         }
     }
